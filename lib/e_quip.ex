@@ -1,0 +1,2 @@
+defmodule EQuip do
+end
