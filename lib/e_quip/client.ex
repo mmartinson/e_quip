@@ -1,19 +1,14 @@
 defmodule EQuip.Client do
   @base_url "https://platform.quip.com/1"
 
-  def call(http_method, path) do
-    case http_method do
-      :get -> get(path)
-      :delete -> delete(path)
-    end
+  def request(http_method, path) when http_method == :get do
+    HTTPoison.request(http_method, url(path), "", headers, [])
+    |> process_response
   end
 
-  def call(http_method, path, data) do
-    case http_method do
-      :post -> post(path, data)
-      :patch -> patch(path, data)
-      :put -> put(path, data)
-    end
+  def request(http_method, path, data) when http_method == :post do
+    HTTPoison.request(http_method, url(path), encode(data), headers, [])
+    |> process_response
   end
 
   def token do
@@ -21,28 +16,20 @@ defmodule EQuip.Client do
   end
 
   def get(path) do
-    process_response HTTPoison.get(@base_url <> path, headers)
+    request(:get, path)
   end
 
   def post(path, data) do
-    process_response HTTPoison.post(@base_url <> path, headers)
-  end
-
-  def patch(path, data) do
-    process_response HTTPoison.patch(@base_url <> path, headers)
-  end
-
-  def put(path, data) do
-    process_response HTTPoison.put(@base_url <> path, headers)
-  end
-
-  def delete(path) do
-    process_response HTTPoison.delete(@base_url <> path, headers)
+    request(:post, path, data)
   end
 
   defp process_response(res) do
     case res do
-      {:ok, %HTTPoison.Response{body: body}} -> parse_body(body)
+      {:ok, %HTTPoison.Response{body: body}} ->
+        body = parse_body(body)
+        {:ok, body}
+
+      {:error, error} -> {:error, error}
     end
   end
 
@@ -51,6 +38,10 @@ defmodule EQuip.Client do
   end
 
   defp headers do
-    [authorization: ("Bearer " <> token)]
+    val = "Bearer " <> token
+    ["Authorization": val]
   end
+
+  defp url(path), do: @base_url <> path
+  defp encode(data), do: URI.encode_query(data)
 end
