@@ -29,9 +29,7 @@ The Quip API uses only GET and POST.
 
 ## Installation
 
-###ToDo: publish on Hex
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed as:
+The package can be installed as:
 
   1. Add e_quip to your list of dependencies in `mix.exs`:
 
